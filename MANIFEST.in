@@ -1,0 +1,4 @@
+recursive-include geoip/public *
+include geoip/public/favicon.ico
+recursive-include geoip/i18n *
+recursive-include geoip/templates *
