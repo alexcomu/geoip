@@ -14,6 +14,6 @@ def init_model(engine):
         mainsession.ensure_indexes(mapper.collection)
 
 # Import your model modules here.
-from geoip.model.auth import User, Group, Permission
+from geoip.model.auth import User, Group, Permission, GeoIP
 
 __all__ = ('User', 'Group', 'Permission')

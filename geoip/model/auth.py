@@ -11,7 +11,7 @@ though.
 import os
 from datetime import datetime
 from hashlib import sha256
-__all__ = ['User', 'Group', 'Permission']
+__all__ = ['User', 'Group', 'Permission', 'GeoIP']
 
 from ming import schema as s
 from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
@@ -19,6 +19,30 @@ from ming.odm import Mapper
 from ming.odm.declarative import MappedClass
 from geoip.model import DBSession
 
+class GeoIP(MappedClass):
+    """
+    GeoIP definition.
+    """
+    class __mongometa__:
+        session = DBSession
+        name = 'geoip'
+        unique_indexes = [('range1',),]
+
+    def __json__(self):
+        return dict(range1=self.range1, range2=self.range2,
+                    country=self.country, country_code=self.country_code)
+
+
+    _id = FieldProperty(s.ObjectId)
+    range1 = FieldProperty(s.Int)
+    range2 = FieldProperty(s.Int)
+    country = FieldProperty(s.String)
+    country_code = FieldProperty(s.String)
+
+    @classmethod
+    def getRange(cls, decimal_ip):
+        return cls.query.find({"range1": {"$lt": decimal_ip},
+                              "range2": {"$gt": decimal_ip}}).first()
 
 class Group(MappedClass):
     """
@@ -125,3 +149,5 @@ class User(MappedClass):
         hash = sha256()
         hash.update((password + self.password[:64]).encode('utf-8'))
         return self.password[64:] == hash.hexdigest()
+
+

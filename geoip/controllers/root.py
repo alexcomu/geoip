@@ -7,10 +7,9 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 from tg.exceptions import HTTPFound
 from tg import predicates
 from geoip import model
-from geoip.controllers.secure import SecureController
-
 from geoip.lib.base import BaseController
 from geoip.controllers.error import ErrorController
+import socket, struct
 
 __all__ = ['RootController']
 
@@ -18,19 +17,7 @@ __all__ = ['RootController']
 class RootController(BaseController):
     """
     The root controller for the geoip application.
-
-    All the other controllers and WSGI applications should be mounted on this
-    controller. For example::
-
-        panel = ControlPanelController()
-        another_app = AnotherWSGIApplication()
-
-    Keep in mind that WSGI applications shouldn't be mounted directly: They
-    must be wrapped around with :class:`tg.controllers.WSGIAppController`.
-
     """
-    secc = SecureController()
-
     error = ErrorController()
 
     def _before(self, *args, **kw):
@@ -40,35 +27,25 @@ class RootController(BaseController):
     def index(self):
         """Handle the front-page."""
         return dict(page='index')
-    @expose('geoip.templates.about')
-    def about(self):
-        """Handle the 'about' page."""
-        return dict(page='about')
 
-    @expose('geoip.templates.environ')
-    def environ(self):
-        """This method showcases TG's access to the wsgi environment."""
-        return dict(page='environ', environment=request.environ)
+    def ip2long(self, ip):
+        """
+        Convert an IP string to long
+        """
+        packedIP = socket.inet_aton(ip)
+        return struct.unpack("!L", packedIP)[0]
 
-    @expose('geoip.templates.data')
     @expose('json')
-    def data(self, **kw):
-        """
-        This method showcases how you can use the same controller
-        for a data page and a display page.
-        """
-        return dict(page='data', params=kw)
-    @expose('geoip.templates.index')
-    @require(predicates.has_permission('manage', msg=l_('Only for managers')))
-    def manage_permission_only(self, **kw):
-        """Illustrate how a page for managers only works."""
-        return dict(page='managers stuff')
-
-    @expose('geoip.templates.index')
-    @require(predicates.is_user('editor', msg=l_('Only for the editor')))
-    def editor_user_only(self, **kw):
-        """Illustrate how a page exclusive for the editor works."""
-        return dict(page='editor stuff')
+    def geoip(self, ip=None):
+        if not ip:
+            return dict(status="500", error="We need an IP")
+        try:
+            decimal_ip = self.ip2long(ip)
+            geo = model.GeoIP.getRange(decimal_ip)
+            return dict(status="200", geoip=geo)
+        except Exception as e:
+            print e
+            return dict(status="500", error="We need a valid IP")
 
     @expose('geoip.templates.login')
     def login(self, came_from=lurl('/'), failure=None, login=''):
