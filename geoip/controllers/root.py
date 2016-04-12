@@ -24,10 +24,10 @@ class RootController(BaseController):
         try:
             ip = request.url.split('/')[-1]
             geo = model.GeoIP.getRange(self.ip2long(ip))
-            return dict(status="200", geoip=geo)
+            return dict(status=200, geoip=geo)
         except Exception as e:
             print e
-            return dict(status="500", error="We need a valid IP!")
+            return dict(status=500, error="We need a valid IP!")
 
     def ip2long(self, ip):
         """
