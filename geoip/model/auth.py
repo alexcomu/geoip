@@ -26,7 +26,8 @@ class GeoIP(MappedClass):
     class __mongometa__:
         session = DBSession
         name = 'geoip'
-        unique_indexes = [('range1',),]
+        indexes = [('country', ), ('country_code', )]
+        unique_indexes = [('range1',), ('range2',)]
 
     def __json__(self):
         return dict(range1=self.range1, range2=self.range2,
