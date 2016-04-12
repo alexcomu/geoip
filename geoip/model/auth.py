@@ -31,7 +31,9 @@ class GeoIP(MappedClass):
 
     def __json__(self):
         return dict(range1=self.range1, range2=self.range2,
-                    country=self.country, country_code=self.country_code)
+                    country=self.country, country_code=self.country_code,
+                    region=self.region, city=self.city, latitude=self.lat,
+                    longitude=self.lng, zipcode=self.zipcode, timezone=self.timezone)
 
 
     _id = FieldProperty(s.ObjectId)
@@ -39,6 +41,12 @@ class GeoIP(MappedClass):
     range2 = FieldProperty(s.Int)
     country = FieldProperty(s.String)
     country_code = FieldProperty(s.String)
+    region = FieldProperty(s.String)
+    city = FieldProperty(s.String)
+    lat = FieldProperty(s.String)
+    lng = FieldProperty(s.String)
+    zipcode = FieldProperty(s.String)
+    timezone = FieldProperty(s.String)
 
     @classmethod
     def getRange(cls, decimal_ip):
