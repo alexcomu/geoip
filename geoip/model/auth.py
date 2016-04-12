@@ -30,8 +30,7 @@ class GeoIP(MappedClass):
         unique_indexes = [('range1',), ('range2',)]
 
     def __json__(self):
-        return dict(range1=self.range1, range2=self.range2,
-                    country=self.country, country_code=self.country_code,
+        return dict(country=self.country, country_code=self.country_code,
                     region=self.region, city=self.city, latitude=self.lat,
                     longitude=self.lng, zipcode=self.zipcode, timezone=self.timezone)
 

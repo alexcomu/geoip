@@ -23,29 +23,24 @@ class RootController(BaseController):
     def _before(self, *args, **kw):
         tmpl_context.project_name = "geoip"
 
-    @expose('geoip.templates.index')
-    def index(self):
-        """Handle the front-page."""
-        return dict(page='index')
+    @expose('json')
+    def _default(self, *args, **kw):
+        try:
+            ip = request.url.split('/')[-1]
+            geo = model.GeoIP.getRange(self.ip2long(ip))
+            return dict(status="200", geoip=geo)
+        except Exception as e:
+            print e
+            return dict(status="500", error="We need a valid IP!")
 
     def ip2long(self, ip):
         """
         Convert an IP string to long
         """
+        if ip.count('.') != 3:
+            raise Exception
         packedIP = socket.inet_aton(ip)
         return struct.unpack("!L", packedIP)[0]
-
-    @expose('json')
-    def geoip(self, ip=None):
-        if not ip:
-            return dict(status="500", error="We need an IP")
-        try:
-            decimal_ip = self.ip2long(ip)
-            geo = model.GeoIP.getRange(decimal_ip)
-            return dict(status="200", geoip=geo)
-        except Exception as e:
-            print e
-            return dict(status="500", error="We need a valid IP")
 
     @expose('geoip.templates.login')
     def login(self, came_from=lurl('/'), failure=None, login=''):
